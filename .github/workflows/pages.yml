@@ -6,16 +6,14 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
   group: pages
   cancel-in-progress: true
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,17 +23,17 @@ jobs:
           cache: npm
       - run: npm install --no-audit --no-fund
       - run: ./node_modules/.bin/vite build --config vite.pages.config.ts
-      - run: cp gh-pages/index.html gh-pages/404.html && touch gh-pages/.nojekyll
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: gh-pages
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Publish gh-pages branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cp gh-pages/index.html gh-pages/404.html
+          touch gh-pages/.nojekyll
+          cd gh-pages
+          git init
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Publish 第一夜"
+          git branch -M gh-pages
+          git push --force "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" gh-pages
