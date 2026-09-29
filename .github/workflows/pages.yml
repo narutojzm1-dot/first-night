@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
+      - run: npm install --no-audit --no-fund
       - run: ./node_modules/.bin/vite build --config vite.pages.config.ts
       - run: cp gh-pages/index.html gh-pages/404.html && touch gh-pages/.nojekyll
       - uses: actions/upload-pages-artifact@v3
