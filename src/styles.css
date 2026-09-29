@@ -1,0 +1,465 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "ZCOOL KuaiLe", "PingFang SC", "Noto Sans SC", sans-serif;
+  --font-sans: "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", sans-serif;
+  --color-night: #14182b;
+  --color-cream: #f4e7cb;
+  --color-dim: #b7ab96;
+  --color-amber: #e8a23a;
+  --color-ink: #1a140f;
+  --color-bark: #2a2118;
+  --color-line: #5a4634;
+  --color-moss: #7dba5a;
+  --color-danger: #d4534a;
+  --color-panel: #241c16;
+}
+
+@layer base {
+  html,
+  body {
+    height: 100%;
+  }
+  body {
+    margin: 0;
+    background: var(--color-night);
+    color: var(--color-cream);
+    font-family: var(--font-sans);
+    overflow: hidden;
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+.fn-root {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: var(--color-night);
+  color: var(--color-cream);
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.fn-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.fn-boot,
+.fn-menu {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: 42%;
+  transform: translate(-50%, -50%);
+  width: min(22rem, calc(100% - 2rem));
+  padding: 1.25rem 1.25rem 1.1rem;
+  border: 1px solid var(--color-line);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--color-panel) 88%, transparent);
+  box-shadow: 0 18px 50px color-mix(in srgb, black 45%, transparent);
+  text-align: left;
+}
+
+.fn-kicker {
+  margin: 0;
+  color: var(--color-amber);
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+}
+
+.fn-title {
+  margin: 0.2rem 0 0.45rem;
+  font-family: var(--font-display);
+  font-size: 3rem;
+  line-height: 1.05;
+  font-weight: 400;
+  color: var(--color-cream);
+}
+
+.fn-lead {
+  margin: 0;
+  color: var(--color-dim);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.fn-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.fn-btn {
+  min-height: 2.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-line);
+  background: transparent;
+  color: var(--color-cream);
+  font: inherit;
+  font-weight: 700;
+  padding: 0.4rem 0.9rem;
+}
+
+.fn-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.fn-btn-primary {
+  background: var(--color-amber);
+  color: var(--color-ink);
+  border-color: var(--color-amber);
+}
+
+.fn-seed {
+  margin: 0.75rem 0 0;
+  color: var(--color-dim);
+  font-size: 0.8rem;
+}
+
+.fn-top {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: calc(env(safe-area-inset-top) + 0.6rem) 0.75rem 0;
+  pointer-events: none;
+}
+
+.fn-top button {
+  pointer-events: auto;
+}
+
+.fn-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.fn-hearts {
+  display: flex;
+  gap: 0.15rem;
+}
+
+.fn-heart {
+  width: 1.05rem;
+  height: 1.05rem;
+  color: var(--color-line);
+}
+
+.fn-heart-on {
+  color: var(--color-danger);
+  fill: var(--color-danger);
+}
+
+.fn-icon-btn {
+  pointer-events: auto;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  border: 1px solid var(--color-line);
+  background: color-mix(in srgb, var(--color-panel) 80%, transparent);
+  color: var(--color-cream);
+}
+
+.fn-clock {
+  min-width: 0;
+  flex: 1;
+}
+
+.fn-clock-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  color: var(--color-cream);
+}
+
+.fn-clock-label span:last-child {
+  color: var(--color-dim);
+}
+
+.fn-bar {
+  margin-top: 0.25rem;
+  height: 0.4rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-ink) 55%, transparent);
+  overflow: hidden;
+}
+
+.fn-bar > i {
+  display: block;
+  height: 100%;
+  background: var(--color-moss);
+  border-radius: inherit;
+}
+
+.fn-bar-dusk > i {
+  background: var(--color-amber);
+}
+
+.fn-bar-night > i {
+  background: var(--color-danger);
+}
+
+.fn-objective {
+  margin: 0;
+  padding: 0.45rem 0.7rem;
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--color-panel) 82%, transparent);
+  border: 1px solid var(--color-line);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.fn-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.fn-chip {
+  border-radius: 999px;
+  padding: 0.15rem 0.55rem;
+  font-size: 0.75rem;
+  border: 1px solid var(--color-line);
+  color: var(--color-dim);
+  background: color-mix(in srgb, var(--color-panel) 75%, transparent);
+}
+
+.fn-chip-ok {
+  color: var(--color-ink);
+  background: var(--color-moss);
+  border-color: var(--color-moss);
+}
+
+.fn-chip-bad {
+  color: var(--color-cream);
+  background: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+.fn-toast {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  top: 28%;
+  transform: translateX(-50%);
+  max-width: min(20rem, calc(100% - 2rem));
+  padding: 0.45rem 0.75rem;
+  border-radius: 0.75rem;
+  background: var(--color-cream);
+  color: var(--color-ink);
+  font-size: 0.88rem;
+  line-height: 1.4;
+  text-align: center;
+  pointer-events: none;
+}
+
+.fn-bottom {
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0 0.6rem calc(env(safe-area-inset-bottom) + 0.55rem);
+}
+
+.fn-hotbar {
+  display: flex;
+  justify-content: center;
+  gap: 0.3rem;
+}
+
+.fn-slot {
+  width: 2.7rem;
+  height: 2.7rem;
+  border-radius: 0.6rem;
+  border: 1px solid var(--color-line);
+  background: color-mix(in srgb, var(--color-panel) 88%, transparent);
+  color: var(--color-cream);
+  position: relative;
+  padding: 0;
+}
+
+.fn-slot-on {
+  border-color: var(--color-amber);
+  box-shadow: inset 0 0 0 1px var(--color-amber);
+}
+
+.fn-count {
+  position: absolute;
+  right: 0.15rem;
+  bottom: 0;
+  font-size: 0.65rem;
+  color: var(--color-cream);
+  text-shadow: 0 1px 0 var(--color-ink);
+}
+
+.fn-pads {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+}
+
+.fn-pad-cluster {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.fn-pad {
+  min-width: 3.25rem;
+  min-height: 3.25rem;
+  border-radius: 0.9rem;
+  border: 1px solid var(--color-line);
+  background: color-mix(in srgb, var(--color-panel) 90%, transparent);
+  color: var(--color-cream);
+  font: inherit;
+  font-weight: 700;
+}
+
+.fn-pad-go {
+  background: var(--color-amber);
+  color: var(--color-ink);
+  border-color: var(--color-amber);
+}
+
+.fn-keys {
+  margin: 0;
+  text-align: center;
+  color: var(--color-dim);
+  font-size: 0.75rem;
+}
+
+.fn-craft,
+.fn-pause,
+.fn-banner {
+  position: absolute;
+  z-index: 4;
+  border: 1px solid var(--color-line);
+  background: color-mix(in srgb, var(--color-panel) 94%, transparent);
+  border-radius: 1rem;
+  color: var(--color-cream);
+}
+
+.fn-craft {
+  right: 0.75rem;
+  bottom: 6.2rem;
+  width: min(22rem, calc(100% - 1.5rem));
+  max-height: 48%;
+  overflow: auto;
+  padding: 0.75rem;
+}
+
+.fn-craft h2,
+.fn-pause h2,
+.fn-banner h2 {
+  margin: 0 0 0.35rem;
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 400;
+}
+
+.fn-sub {
+  margin: 0.7rem 0 0.3rem;
+  color: var(--color-amber);
+  font-size: 0.75rem;
+}
+
+.fn-recipe {
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--color-line);
+  background: transparent;
+  color: var(--color-cream);
+  border-radius: 0.7rem;
+  padding: 0.45rem 0.55rem;
+  margin-top: 0.35rem;
+  font: inherit;
+}
+
+.fn-recipe strong {
+  display: block;
+  font-size: 0.92rem;
+}
+
+.fn-recipe small {
+  color: var(--color-dim);
+  font-size: 0.75rem;
+}
+
+.fn-recipe-ok {
+  border-color: var(--color-moss);
+}
+
+.fn-bag {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.fn-pause,
+.fn-banner {
+  left: 50%;
+  top: 46%;
+  transform: translate(-50%, -50%);
+  width: min(20rem, calc(100% - 2rem));
+  padding: 1rem;
+}
+
+.fn-banner p,
+.fn-pause p {
+  margin: 0 0 0.8rem;
+  color: var(--color-dim);
+  line-height: 1.5;
+  font-size: 0.92rem;
+}
+
+@media (max-width: 860px) {
+  .fn-pads {
+    display: flex;
+  }
+  .fn-slot {
+    width: 2.35rem;
+    height: 2.35rem;
+  }
+  .fn-keys {
+    display: none;
+  }
+  .fn-craft {
+    left: 0.6rem;
+    right: 0.6rem;
+    width: auto;
+    bottom: 10.6rem;
+    max-height: 40%;
+  }
+  .fn-title {
+    font-size: 2.6rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fn-root {
+    scroll-behavior: auto;
+  }
+}
