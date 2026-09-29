@@ -9,3 +9,6 @@ artifacts
 .node_modules.lock
 dist
 .output
+gh-pages
+
+
