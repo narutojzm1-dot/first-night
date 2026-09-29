@@ -160,27 +160,41 @@ export function renderFrame(canvas: HTMLCanvasElement, game: Engine) {
     ctx.stroke();
   }
 
-  if (game.mode === "play" && game.aimOk && inBounds(game.aimTx, game.aimTy)) {
-    ctx.strokeStyle = game.mineProg > 0 ? "#f4e7cb" : "rgba(244,231,203,0.75)";
+  if (game.mode === "play" && game.placeOk) {
+    ctx.fillStyle = "rgba(232,162,58,0.38)";
+    ctx.strokeStyle = "#e8a23a";
     ctx.lineWidth = 1;
-    ctx.strokeRect(game.aimTx * TILE + 0.5, game.aimTy * TILE + 0.5, TILE - 1, TILE - 1);
-    if (game.mineProg > 0) {
-      ctx.strokeStyle = "rgba(20,16,12,0.75)";
-      const cracks = Math.ceil(game.mineProg * 3);
-      ctx.beginPath();
-      if (cracks >= 1) {
-        ctx.moveTo(game.aimTx * TILE + 3, game.aimTy * TILE + 4);
-        ctx.lineTo(game.aimTx * TILE + 8, game.aimTy * TILE + 9);
+    for (const cell of game.placeCells) {
+      ctx.fillRect(cell.x * TILE, cell.y * TILE, TILE, TILE);
+      ctx.strokeRect(cell.x * TILE + 0.5, cell.y * TILE + 0.5, TILE - 1, TILE - 1);
+    }
+  }
+
+  if (game.mode === "play" && game.aimOk && inBounds(game.aimTx, game.aimTy)) {
+    const aimed = game.world.fg[idx(game.aimTx, game.aimTy)];
+    const showMine = aimed !== T.AIR && aimed !== T.CHEST && (game.mineProg > 0 || !game.placeOk);
+    if (showMine) {
+      ctx.strokeStyle = game.mineProg > 0 ? "#f4e7cb" : "rgba(244,231,203,0.75)";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(game.aimTx * TILE + 0.5, game.aimTy * TILE + 0.5, TILE - 1, TILE - 1);
+      if (game.mineProg > 0) {
+        ctx.strokeStyle = "rgba(20,16,12,0.75)";
+        const cracks = Math.ceil(game.mineProg * 3);
+        ctx.beginPath();
+        if (cracks >= 1) {
+          ctx.moveTo(game.aimTx * TILE + 3, game.aimTy * TILE + 4);
+          ctx.lineTo(game.aimTx * TILE + 8, game.aimTy * TILE + 9);
+        }
+        if (cracks >= 2) {
+          ctx.moveTo(game.aimTx * TILE + 12, game.aimTy * TILE + 3);
+          ctx.lineTo(game.aimTx * TILE + 7, game.aimTy * TILE + 10);
+        }
+        if (cracks >= 3) {
+          ctx.moveTo(game.aimTx * TILE + 5, game.aimTy * TILE + 13);
+          ctx.lineTo(game.aimTx * TILE + 13, game.aimTy * TILE + 8);
+        }
+        ctx.stroke();
       }
-      if (cracks >= 2) {
-        ctx.moveTo(game.aimTx * TILE + 12, game.aimTy * TILE + 3);
-        ctx.lineTo(game.aimTx * TILE + 7, game.aimTy * TILE + 10);
-      }
-      if (cracks >= 3) {
-        ctx.moveTo(game.aimTx * TILE + 5, game.aimTy * TILE + 13);
-        ctx.lineTo(game.aimTx * TILE + 13, game.aimTy * TILE + 8);
-      }
-      ctx.stroke();
     }
   }
 

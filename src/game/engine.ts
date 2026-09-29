@@ -40,7 +40,7 @@ import {
 
 const PW = 10;
 const PH = 20;
-const REACH = 78;
+const REACH = 108;
 const MAX_HP = 5;
 
 export type Mob = {
@@ -127,6 +127,8 @@ export class Engine {
   aimTx = 0;
   aimTy = 0;
   aimOk = false;
+  placeOk = false;
+  placeCells: { x: number; y: number }[] = [];
   mineProg = 0;
   mineTx = -1;
   mineTy = -1;
@@ -146,6 +148,7 @@ export class Engine {
   view = { cssW: 390, cssH: 700, scale: 2, dpr: 1 };
   touchLayout = false;
   aimFromPointer = false;
+  private pointerTouch = false;
   aimWorld: { x: number; y: number } | null = null;
   onHud: (() => void) | null = null;
 
@@ -234,9 +237,27 @@ export class Engine {
     Object.assign(this.pad, partial);
   }
 
-  setPointer(cssX: number, cssY: number) {
+  setPointer(cssX: number, cssY: number, kind: "mouse" | "touch" = "mouse") {
     this.aimWorld = { x: this.camX + cssX / this.view.scale, y: this.camY + cssY / this.view.scale };
     this.aimFromPointer = true;
+    this.pointerTouch = kind === "touch";
+  }
+
+  /** Press on the world: solid tiles mine, empty ground places the selected item. */
+  pointerStroke(down: boolean) {
+    if (!down) {
+      this.pointerDown = false;
+      if (this.pointerTouch) this.aimFromPointer = false;
+      return;
+    }
+    this.updateAim();
+    if (this.aimOk && this.breakableAt(this.aimTx, this.aimTy)) {
+      this.pointerDown = true;
+      return;
+    }
+    this.pointerDown = false;
+    const held = this.selectedItem();
+    if (held && PLACE[held]) this.tryPlace();
   }
 
   setPointerDown(on: boolean) {
@@ -773,40 +794,106 @@ export class Engine {
   }
 
   private updateAim() {
+    const cx = Math.floor(this.x / TILE);
+    const feet = Math.floor((this.y - 1) / TILE);
+    let px = cx + this.facing;
+    let py = feet;
     if (this.aimFromPointer && this.aimWorld) {
       if (this.aimWorld.x < this.x - 6) this.facing = -1;
       if (this.aimWorld.x > this.x + 6) this.facing = 1;
       const tx = Math.floor(this.aimWorld.x / TILE);
       const ty = Math.floor(this.aimWorld.y / TILE);
       if (inBounds(tx, ty) && this.inReach(tx, ty)) {
-        this.aimTx = tx;
-        this.aimTy = ty;
-        this.aimOk = true;
-        return;
+        px = tx;
+        py = ty;
+      }
+    } else if (this.pointerDown || this.pad.mine || this.down("KeyJ")) {
+      const solid = this.nearestSolid(cx, Math.floor((this.y - 12) / TILE));
+      if (solid) {
+        px = solid.x;
+        py = solid.y;
       }
     }
-    const cx = Math.floor(this.x / TILE);
-    const cy = Math.floor((this.y - 12) / TILE);
-    let best: { tx: number; ty: number; d: number } | null = null;
-    for (let ty = cy - 3; ty <= cy + 3; ty++) {
-      for (let tx = cx + (this.facing < 0 ? -4 : 0); tx <= cx + (this.facing > 0 ? 4 : 0); tx++) {
-        if (!inBounds(tx, ty) || !this.inReach(tx, ty)) continue;
-        const tile = this.world.fg[idx(tx, ty)];
-        if (tile === T.AIR) continue;
-        const dx = tx * TILE + 8 - (this.x + this.facing * 12);
-        const dy = ty * TILE + 8 - (this.y - 12);
-        const d = dx * dx + dy * dy;
-        if (!best || d < best.d) best = { tx, ty, d };
+    const held = this.selectedItem();
+    const placing = Boolean(held && PLACE[held]) && !(this.pointerDown || this.pad.mine || this.down("KeyJ"));
+    if (!placing && !this.breakableAt(px, py)) {
+      const near = this.nearestSolid(px, py, 1);
+      if (near) {
+        px = near.x;
+        py = near.y;
       }
     }
-    if (best) {
-      this.aimTx = best.tx;
-      this.aimTy = best.ty;
+    this.aimTx = px;
+    this.aimTy = py;
+    this.aimOk = inBounds(px, py) && this.inReach(px, py);
+
+    if (held && PLACE[held]) {
+      const preferX = this.aimFromPointer ? px : cx + this.facing;
+      const preferY = this.aimFromPointer ? py : feet;
+      const cells = this.findPlace(held, preferX, preferY);
+      this.placeCells = cells ? cells.map((c) => ({ x: c.x, y: c.y })) : [];
+      this.placeOk = Boolean(cells);
     } else {
-      this.aimTx = cx + this.facing;
-      this.aimTy = cy;
+      this.placeCells = [];
+      this.placeOk = false;
     }
-    this.aimOk = this.inReach(this.aimTx, this.aimTy);
+  }
+
+  private breakableAt(tx: number, ty: number): boolean {
+    if (!inBounds(tx, ty) || ty === WORLD_H - 1) return false;
+    const tile = this.world.fg[idx(tx, ty)];
+    return tile !== T.AIR && tile !== T.CHEST;
+  }
+
+  private nearestSolid(cx: number, cy: number, rad = 5): { x: number; y: number } | null {
+    let best: { x: number; y: number; d: number } | null = null;
+    for (let ty = cy - rad; ty <= cy + rad; ty++) {
+      for (let tx = cx - rad; tx <= cx + rad; tx++) {
+        if (!this.breakableAt(tx, ty) || !this.inReach(tx, ty)) continue;
+        const dx = tx - cx;
+        const dy = ty - cy;
+        const behind = dx * this.facing < 0 ? 3 : 0;
+        const d = dx * dx + dy * dy + behind;
+        if (!best || d < best.d) best = { x: tx, y: ty, d };
+      }
+    }
+    return best;
+  }
+
+  private findPlace(id: ItemId, px: number, py: number) {
+    const spots: [number, number][] = [
+      [px, py],
+      [px, py - 1],
+      [px + this.facing, py],
+      [px + this.facing, py - 1],
+      [px, py + 1],
+      [px - this.facing, py],
+      [px + this.facing, py + 1],
+      [px + this.facing * 2, py],
+      [px, py - 2],
+    ];
+    if (id === "bed") spots.push([px - 1, py], [px - 1, py - 1], [px + this.facing, py]);
+    const seen = new Set<string>();
+    for (const [x, y] of spots) {
+      const key = `${x},${y}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const cells = this.placeValid(id, x, y);
+      if (cells) return cells;
+    }
+    return null;
+  }
+
+  private placeValid(id: ItemId, tx: number, ty: number) {
+    const cells = this.footprint(id, tx, ty);
+    if (!cells) return null;
+    for (const c of cells) {
+      if (!inBounds(c.x, c.y) || !this.inReach(c.x, c.y)) return null;
+      if (this.world.fg[idx(c.x, c.y)] !== T.AIR) return null;
+      if (isSolid(c.tile) && this.overlapsPlayer(c.x, c.y)) return null;
+    }
+    if (!this.supported(id, cells)) return null;
+    return cells;
   }
 
   private updateMine(dt: number) {
@@ -894,27 +981,14 @@ export class Engine {
       this.toast("这个不能往地上放。");
       return;
     }
-    if (!this.aimOk) {
-      this.toast("太远了。");
+    if (!this.placeOk) {
+      this.toast("旁边没有能放下的空位。靠近一点，或点在地面旁边。");
       return;
     }
-    const cells = this.footprint(id, this.aimTx, this.aimTy);
-    if (!cells) return;
-    for (const c of cells) {
-      if (!inBounds(c.x, c.y) || this.world.fg[idx(c.x, c.y)] !== T.AIR) {
-        this.toast("这儿被占住了。");
-        return;
-      }
-    }
-    if (!this.supported(id, cells)) {
-      this.toast(spec.kind === "floor" ? "得放在结实的地面上。" : "要贴着已有的方块。");
+    const cells = this.placeValid(id, this.placeCells[0].x, this.placeCells[0].y);
+    if (!cells) {
+      this.toast("这儿放不下。");
       return;
-    }
-    for (const c of cells) {
-      if (isSolid(c.tile) && this.overlapsPlayer(c.x, c.y)) {
-        this.toast("会被自己卡住。");
-        return;
-      }
     }
     if (!this.consumeSafe(id)) return;
     for (const c of cells) this.world.fg[idx(c.x, c.y)] = c.tile;

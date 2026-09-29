@@ -238,7 +238,7 @@ export function baseBreak(tile: number): number {
     case T.POT:
     case T.TORCH:
     case T.CAMP:
-      return 0.38;
+      return 0.26;
     case T.LOG:
     case T.PLANK:
     case T.DOOR:
@@ -250,7 +250,7 @@ export function baseBreak(tile: number): number {
     case T.BED_L:
     case T.BED_R:
     case T.BENCH:
-      return 0.62;
+      return 0.4;
     case T.GLASS:
       return 0.5;
     case T.COAL:

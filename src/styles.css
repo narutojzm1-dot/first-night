@@ -344,11 +344,16 @@
   border-color: var(--color-amber);
 }
 
-.fn-keys {
+.fn-keys,
+.fn-hint {
   margin: 0;
   text-align: center;
   color: var(--color-dim);
   font-size: 0.75rem;
+}
+
+.fn-hint {
+  display: none;
 }
 
 .fn-craft,
@@ -440,11 +445,18 @@
     display: flex;
   }
   .fn-slot {
-    width: 2.35rem;
-    height: 2.35rem;
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+  .fn-pad {
+    min-width: 3.5rem;
+    min-height: 3.5rem;
   }
   .fn-keys {
     display: none;
+  }
+  .fn-hint {
+    display: block;
   }
   .fn-craft {
     left: 0.6rem;

@@ -92,22 +92,22 @@ export function FirstNight() {
         onPointerDown={(e) => {
           const g = eng();
           if (!g || g.mode !== "play" || g.paused) return;
+          if (e.pointerType !== "touch" && e.button !== 0 && e.button !== 2) return;
+          e.currentTarget.setPointerCapture(e.pointerId);
           const rect = e.currentTarget.getBoundingClientRect();
-          g.setPointer(e.clientX - rect.left, e.clientY - rect.top);
-          if (e.pointerType === "touch") return;
-          if (e.button === 0) g.setPointerDown(true);
+          g.setPointer(e.clientX - rect.left, e.clientY - rect.top, e.pointerType === "touch" ? "touch" : "mouse");
           if (e.button === 2) g.requestPlace();
+          else g.pointerStroke(true);
         }}
         onPointerMove={(e) => {
           const g = eng();
-          if (!g || e.pointerType === "touch") return;
+          if (!g) return;
+          if (e.pointerType === "touch" && e.buttons === 0) return;
           const rect = e.currentTarget.getBoundingClientRect();
-          g.setPointer(e.clientX - rect.left, e.clientY - rect.top);
+          g.setPointer(e.clientX - rect.left, e.clientY - rect.top, e.pointerType === "touch" ? "touch" : "mouse");
         }}
-        onPointerUp={(e) => {
-          if (e.pointerType !== "touch") eng()?.setPointerDown(false);
-        }}
-        onPointerLeave={() => eng()?.setPointerDown(false)}
+        onPointerUp={(e) => eng()?.pointerStroke(false)}
+        onPointerCancel={() => eng()?.pointerStroke(false)}
       />
       {!hud ? <Boot /> : hud.mode === "menu" ? <Menu hud={hud} eng={eng} /> : <Play hud={hud} eng={eng} />}
     </div>
@@ -230,7 +230,8 @@ function Play({ hud, eng }: { hud: Hud; eng: () => Engine | null }) {
           <button className="fn-btn" onClick={() => eng()?.toggleCraft()}>
             {hud.craftOpen ? "收起制作" : "制作"}
           </button>
-          <p className="fn-keys">A D 移动 · 空格跳 · 按住左键挖 · 右键放置 · F 使用 · E 制作</p>
+          <p className="fn-keys">点方块挖 · 点空地放 · A D 移动 · 空格跳 · 右键也能放 · 1–8 选格子</p>
+          <p className="fn-hint">点方块就挖，点空地就放。琥珀格子是即将放下的位置。</p>
         </div>
       </footer>
       {hud.craftOpen ? (
